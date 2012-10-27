@@ -1,0 +1,20 @@
+dim result
+dim port
+dim data
+dim motion
+
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw )
+	call gap_set_mode(2,2)
+	call sm_set_bondable_mode(1)
+	call hardware_io_port_config_direction(0,$0) # redundant. input is the default
+	call hardware_set_soft_timer(32000,0,0)
+end
+
+event hardware_soft_timer(handle)
+	call hardware_io_port_read(0, $1)(result, port, data)		
+	call attributes_write(xgatt_motion_sensor,0,1,data)
+end
+
+event connection_disconnected(handle,result)
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+end

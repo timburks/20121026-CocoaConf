@@ -1,0 +1,81 @@
+# this is a simple example to show how to read the secondary MAC address
+# stored in flash and display it on the LCD of the BLE112 Eval board.
+
+dim addr(6)
+dim tmp(16)
+dim x
+dim offset
+dim a
+dim b
+dim c
+
+event system_boot(major,minor,patch,build,ll_version,protocol,hw)
+	#Set device to advertisement mode and allow undirected connections
+	call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+	#Allow pairing
+	call sm_set_bondable_mode(1)
+
+	# set the display to command mode
+	call hardware_io_port_write(1,$7,$1)
+	call hardware_io_port_config_direction(1,$7)
+	# Initialize the display
+	call hardware_spi_transfer(0,11,"\x30\x30\x30\x39\x14\x56\x6d\x70\x0c\x06\x01")
+	# Change display cursor pos
+	call hardware_spi_transfer(0,1,"\x80")
+	# set the display to data mode
+	call hardware_io_port_write(1,$7,$3)
+	#Write title to display
+	call hardware_spi_transfer(0,16,"Name Badge      ")
+
+	# Get local BT address and display it on the LCD
+	call system_address_get()(addr(0:6))
+	
+	# convert all the numbers to ascii for display and store it in t
+	tmp(0:1) = (addr(5:1)/$10) + 48 + ((addr(5:1)/$10)/10*7)
+	tmp(1:1) = (addr(5:1)&$f) + 48 + ((addr(5:1)&$f )/10*7) 
+	tmp(2:1) = (addr(4:1)/$10) + 48 + ((addr(4:1)/$10)/10*7) 
+	tmp(3:1) = (addr(4:1)&$f) + 48 + ((addr(4:1)&$f )/10*7) 
+	tmp(4:1) = (addr(3:1)/$10) + 48 + ((addr(3:1)/$10)/10*7) 
+	tmp(5:1) = (addr(3:1)&$f) + 48 + ((addr(3:1)&$f )/10*7) 
+	tmp(6:1) = (addr(2:1)/$10) + 48 + ((addr(2:1)/$10)/10*7) 
+	tmp(7:1) = (addr(2:1)&$f) + 48 + ((addr(2:1)&$f )/10*7) 
+	tmp(8:1) = (addr(1:1)/$10) + 48 + ((addr(1:1)/$10)/10*7) 
+	tmp(9:1) = (addr(1:1)&$f) + 48 + ((addr(1:1)&$f )/10*7) 
+	tmp(10:1) = (addr(0:1)/$10)+ 48 + ((addr(0:1)/$10)/10*7) 
+	tmp(11:1) = (addr(0:1)&$f) + 48 + ((addr(0:1)&$f )/10*7)
+	
+	#set the display to command mode
+	call hardware_io_port_write(1,$7,$1)
+	# Change display cursor pos
+	call hardware_spi_transfer(0,1,"\xc0")
+	#set the display to data mode
+	call hardware_io_port_write(1,$7,$3)
+	# write out the string in t to the display
+	call hardware_spi_transfer(0,12,tmp(0:12))
+
+	# setup port 2 pin 1 for the switch output
+	call hardware_io_port_config_direction(2,$2)
+	# turn port pin off
+	call hardware_io_port_write(2,$2,$0)
+
+
+end
+
+
+
+
+
+event connection_disconnected(handle,result)
+	#set the display to command mode
+	call hardware_io_port_write(1,$7,$1)
+	# Change display cursor pos
+	call hardware_spi_transfer(0,1,"\x87")
+	#set the display to data mode
+	call hardware_io_port_write(1,$7,$3)
+	#Write temperature to display
+	call hardware_spi_transfer(0,1,"D")
+
+	#in case if disconnect, return to advertisement mode
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+end
+

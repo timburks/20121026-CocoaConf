@@ -1,0 +1,35 @@
+dim tmp(10)
+
+event system_boot(major,minor,patch,build,ll_version,protocol,hw)
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+    call sm_set_bondable_mode(1)
+    call hardware_set_soft_timer(32000,0,0)
+end
+
+event hardware_soft_timer(handle)
+    #first read battery level
+    call hardware_adc_read(15,3,0)
+end
+
+event hardware_adc_result(input,value)
+    #battery level reading received, store to gatt and read potentiometer level
+    if input = 15 then
+        call attributes_write(xgatt_battery,0,2,value)
+        #read potentiometer, decimation 128, use avdd5 as reference
+        call hardware_adc_read(6,1,2)
+    end if
+    if input = 6 then
+        #potentiometer value is measured
+        
+        #build simple characteristic value response
+        tmp(0:1)=2
+        #calculate some valid hr value 20-224
+        tmp(1:1)=value/160+20
+    
+        call attributes_write(xgatt_hr,0,2,tmp(0:2))
+    end if
+end
+
+event connection_disconnected(handle,result)
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+end

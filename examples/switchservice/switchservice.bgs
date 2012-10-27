@@ -1,0 +1,39 @@
+dim tmp(16)
+
+event system_boot(major,minor,patch,build,ll_version,protocol,hw)	
+	#Set device to advertisement mode and allow undirected connections
+	call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+	#Allow pairing
+	call sm_set_bondable_mode(1)
+
+	#set the display to command mode
+	call hardware_io_port_write(1,$7,$1)
+	call hardware_io_port_config_direction(1,$7)
+	#initialize the display
+	call hardware_spi_transfer(0,11,"\x30\x30\x30\x39\x14\x56\x6d\x70\x0c\x06\x01")
+	# Change display cursor pos
+	call hardware_spi_transfer(0,1,"\x80")
+	#set the display to data mode
+	call hardware_io_port_write(1,$7,$3)
+	#Write title to display
+	call hardware_spi_transfer(0,16," Switch Service ")
+	
+	# setup port 2 pin 1 for the switch output
+	call hardware_io_port_config_direction(2,$2)
+	# turn port pin off
+	call hardware_io_port_write(2,$2,$0)
+end
+
+event connection_disconnected(handle,result)
+	#in case if disconnect, return to advertisement mode
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+end
+
+event attributes_value(connection, reason, handle, offset, value_len, value)
+	# the switch (LED) is on port 2 pin 2 which we toggle on or off
+	if value(0) > 0
+		call hardware_io_port_write(2,$2,$2)
+	else
+		call hardware_io_port_write(2,$2,$0)
+	end if
+end

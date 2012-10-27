@@ -1,0 +1,2 @@
+xgatt_motion_sensor 21
+xgatt_battery 27

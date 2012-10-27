@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+      <description>Generic Access Profile</description>
+
+      <characteristic uuid="2a00">
+        <properties read="true" const="true" />
+        <value>Switch Service Demo</value>
+      </characteristic>
+
+      <characteristic uuid="2a01">
+        <properties read="true" const="true" />
+        <value type="hex">4142</value>
+      </characteristic>
+    </service>
+
+    <service type="primary" uuid="9000" id="manufacturer">
+        <characteristic uuid="9100">
+            <properties read="true" const="true" />
+            <value type="hex">000780c0ffeef00d</value>
+        </characteristic>
+        <characteristic uuid="9101">
+            <properties read="true" const="true" />
+            <value>modelnumber</value>
+        </characteristic>
+        <characteristic uuid="9106">
+            <properties read="true" const="true" />
+            <value>Bluegiga</value>
+        </characteristic>
+    </service>
+
+    <service uuid="A696CB2B-F3A4-4240-B74D-C457C253857B">
+        <description>Switch Service</description>
+        <characteristic uuid="AEDA780E-1CCF-4B85-BCA0-3484F295D031" id="xgatt_switch_state">
+            <description>Switch State</description>
+            <properties read="true" write="true"/>
+            <value type="hex" length="1"></value>
+        </characteristic>
+    </service>
+</configuration>
